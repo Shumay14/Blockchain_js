@@ -1,12 +1,13 @@
 contract registryDID {
   
-  struct createDID {
-      string name;
-      uint age;
-      bool gender;
-      bool married;
-      uint[] bankAccountNum;
-  }
+  // get enhashed data
+  // struct createDID {
+  //     string name;
+  //     uint age;
+  //     bool gender;
+  //     bool married;
+  //     uint[] bankAccountNum;
+  // }
 
   mapping(address => address) public owners;
   mapping(address => mapping(bytes32 => mapping(address => uint))) public delegates;
