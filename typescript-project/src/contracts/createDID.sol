@@ -9,6 +9,12 @@ contract registryDID {
   //     uint[] bankAccountNum;
   // }
 
+  function crypto() returns (bytes32, bytes32, bytes32){
+        
+        return (sha256("r"), keccak256("r"), sha3("r"));
+        
+    }
+
   mapping(address => address) public owners;
   mapping(address => mapping(bytes32 => mapping(address => uint))) public delegates;
   mapping(address => uint) public changed;
