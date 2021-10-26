@@ -1,4 +1,21 @@
 {
+  "username": "string",
+  "password": "stringst",
+  "options": {
+    "didMethod": "jolo",
+    "keyTypes": [
+      "rsa"
+    ]
+  },
+  "messageParameters": {
+    "message": "string",
+    "subject": "string",
+    "htmlMessage": "string"
+  }
+}
+
+
+{
     "contractName": "EthereumDIDRegistry",
     "abi": [
       {

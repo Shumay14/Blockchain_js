@@ -8,6 +8,7 @@ contract registryDID {
   //     bool married;
   //     uint[] bankAccountNum;
   // }
+  
 
   function crypto() returns (bytes32, bytes32, bytes32){
         
