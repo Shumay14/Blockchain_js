@@ -14,4 +14,9 @@ contract UserStorage {
    function getUserData(address user) public view returns (uint) {
       return userData[user];
    }
+
+   bytes32 public hashedValue;
+   function hashData(uint value1, bytes32 password) public {
+      hashedValue = keccak256(abi.encodePacked(value1, password));
+   }
 }
