@@ -1,3 +1,13 @@
+import { TokenSigner, createUnsecuredToken, decodeToken } from "jsontokens"
+ 
+const rawPrivateKey = '278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'
+const tokenPayload = {"iat": 1440713414.85}
+const token = new TokenSigner('ES256K', rawPrivateKey).sign(tokenPayload)
+
+const unsecuredToken = createUnsecuredToken(tokenPayload)
+
+const tokenData = decodeToken(token)
+
 const { Sidetree, MnemonicKeySystem } = require("@transmute/element-lib");
 
 // Instantiate the Sidetree class
