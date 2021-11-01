@@ -1,7 +1,7 @@
 // Generate a simple did document model
 const didDocumentModel = getDidDocumentModel(
   primaryKey.publicKey,
-  recoveryKey.privateKey
+  recoveryKey.publicKey
 );
 
 // Generate Sidetree Create payload
@@ -13,7 +13,7 @@ const createPayload = getCreatePayload(didDocumentModel, primaryKey);
 console.log(`${did} was successfully created`);
 
 
-const getDidDocumentModel = (primaryPublicKey, recoveryPrivateKey) => ({
+const getDidDocumentModel = (primaryPublicKey, recoveryPublicKey) => ({
   '@context': 'https://w3id.org/did/v1',
   publicKey: [
     {
