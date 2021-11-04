@@ -1,12 +1,35 @@
 const DIDWallet = require('@transmute/did-wallet');
 const ES256K = require('@transmute/es256k-jws-ts');
-const jsonpatch = require('fast-json-patch');
+
 
 const { encodeJson } = require('../../func');
 
 const elementCrypto = require('../../crypto');
 const MnemonicKeySystem = require('../../crypto/MnemonicKeySystem');
 
+const header = {
+  "typ": "JWT",
+  "alg": "RSA"
+};
+
+export interface JWTHeader {
+  typ: 'JWT'
+  alg: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any
+}
+
+export interface JWTPayload {
+  iss?: string
+  sub?: string
+  aud?: string | string[]
+  iat?: number
+  nbf?: number
+  exp?: number
+  rexp?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any
+}
 
 // Generate a simple did document model
 const didDocumentModel = getDidDocumentModel(
@@ -40,6 +63,32 @@ const getDidDocumentModel = (primaryPublicKey, recoveryPublicKey) => ({
     },
   ],
 });
+
+const makeSignedOperation = (header, payload, privateKey) => {
+  const encodedHeader = encodeJson(header);
+  const encodedPayload = encodeJson(payload);
+  const signature = signEncodedPayload(
+    encodedHeader,
+    encodedPayload,
+    privateKey
+  );
+  const operation = {
+    protected: encodedHeader,
+    payload: encodedPayload,
+    signature,
+  };
+  return operation;
+};
+
+const getCreatePayload = (didDocumentModel, primaryKey) => {
+  // Create the encoded protected header.
+  const header = {
+    operation: 'create',
+    kid: '#primary',
+    alg: 'ES256K',
+  };
+  return makeSignedOperation(header, didDocumentModel, primaryKey.privateKey);
+};
 
 const walletToInitialDIDDoc = wallet => {
   const didDocumentModel = {
