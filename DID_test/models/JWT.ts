@@ -16,11 +16,17 @@ export interface JWTOptions {
   canonicalize?: boolean
 }
 
+export interface JWSCreationOptions {
+  canonicalize?: boolean
+}
+
 export interface DIDAuthenticator {
   authenticators: VerificationMethod[]
   issuer: string
   didResolutionResult: DIDResolutionResult
 }
+
+
 
 export interface JWTHeader {
   typ: 'JWT'
