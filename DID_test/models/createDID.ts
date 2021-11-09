@@ -1,7 +1,18 @@
+// const didJWT = require('did-jwt')
+const didJWT = require('did-jwt')
+const signer = didJWT.ES256KSigner('278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f')
+
+let jwt = await didJWT.createJWT(
+  { aud: 'did:ethr:0xf3beac30c498d9e26865f34fcaa57dbb935b0d74', exp: 1957463421, name: 'uPort Developer' },
+  { issuer: 'did:ethr:0xf3beac30c498d9e26865f34fcaa57dbb935b0d74', signer },
+  { alg: 'ES256K' }
+)
+console.log(jwt)
+
 const DIDWallet = require('@transmute/did-wallet');
 const ES256K = require('@transmute/es256k-jws-ts');
 
-
+import { createJWT, ES256KSigner } from 'did-jwt'
 const { encodeJson } = require('../../func');
 
 const elementCrypto = require('../../crypto');
