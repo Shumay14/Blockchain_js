@@ -1,4 +1,6 @@
+// convert data into canonical(standard or normal) format
 import canonicalizeData from 'canonicalize'
+import { decodeBase64url, encodeBase64url } from './util'
 
 export interface JWTHeader {
   typ: 'JWT'
@@ -13,8 +15,8 @@ export interface JWTPayload {
   iat?: number
   nbf?: number
   exp?: number
-  
 }
+
 
 // JWTSigniture is JWS = encode JWT header + payload
 export interface JWTSigniture {
@@ -28,7 +30,6 @@ export interface JWTDecoded {
   signature: string
   data: string
 }
-
 
 
 export async function createJWT(
