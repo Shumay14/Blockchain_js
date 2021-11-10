@@ -2,6 +2,12 @@
 import canonicalizeData from 'canonicalize'
 import { decodeBase64url, encodeBase64url } from './util'
 
+
+
+export type Signer = (data: string | Uint8Array) => Promise<string>
+export type SignerAlgorithm = (payload: string, signer: Signer) => Promise<string>
+
+
 export interface JWTHeader {
   typ: 'JWT'
   alg: string
@@ -19,8 +25,13 @@ export interface JWTPayload {
 
 
 // JWTSigniture is JWS = encode JWT header + payload
-export interface JWTSigniture {
-  siginture: string
+// export interface JWTSigniture {
+//   siginture: string
+// }
+
+
+export interface JWTData {
+
 }
 
 
@@ -34,8 +45,8 @@ export interface JWTDecoded {
 
 export async function createJWT(
   header: Partial<JWTHeader>,
-  payload: Partial<JWTPayload>
-
+  payload: Partial<JWTPayload>,
+  signer: Signer 
   
 ): Promise<string> {
 
@@ -74,6 +85,7 @@ export function decodeJWT(jwt: string): JWTDecoded {
   }
 }
 
+// signer redeclared...
 const signer = ES256KSigner(process.env.PRIVATE_KEY)
 const jws = await createJWS({ my: 'payload' }, signer)
 
@@ -88,6 +100,60 @@ function encodeSection(data: any, shouldCanonicalize = false): string {
     return encodeBase64url(JSON.stringify(data))
   }
 }
+
+
+
+
+const audAddress = '0x20c769ec9c0996ba7737a4826c2aaff00b1b2040'
+const aud = `did:ethr:${audAddress}`
+const address = '0xf3beac30c498d9e26865f34fcaa57dbb935b0d74'
+const did = `did:ethr:${address}`
+const alg = 'ES256K'
+
+const privateKey = '278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'
+const publicKey = '03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479'
+const verifier = new TokenVerifier(alg, publicKey)
+const signer = ES256KSigner(privateKey)
+const recoverySigner = ES256KSigner(privateKey, true)
+
+const didDocLegacy = {
+  '@context': 'https://w3id.org/did/v1',
+  id: did,
+  publicKey: [
+    {
+      id: `${did}#keys-1`,
+      type: 'Secp256k1VerificationKey2018',
+      owner: did,
+      publicKeyHex: publicKey,
+    },
+  ],
+  authentication: [
+    {
+      type: 'Secp256k1SignatureAuthentication2018',
+      publicKey: `${did}#keys-1`,
+    },
+  ],
+}
+
+const didDoc = {
+  didDocument: {
+    '@context': 'https://w3id.org/did/v1',
+    id: did,
+    verificationMethod: [
+      {
+        id: `${did}#keys-1`,
+        type: 'EcdsaSecp256k1VerificationKey2019',
+        controller: did,
+        publicKeyHex: publicKey,
+      },
+    ],
+    authentication: [`${did}#keys-1`],
+    assertionMethod: [`${did}#keys-1`],
+    capabilityInvocation: [`${did}#keys-1`],
+    capabilityDelegation: [`${did}#some-key-that-does-not-exist`],
+  },
+}
+
 
 
 
