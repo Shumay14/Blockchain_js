@@ -43,6 +43,26 @@ export interface JWTDecoded {
 }
 
 
+export interface JWTVerified {
+  payload: Partial<JWTPayload>
+  didResolutionResult: DIDResolutionResult
+  issuer: string
+  signer: VerificationMethod
+  jwt: string
+}
+
+
+export interface PublicKeyTypes {
+  [name: string]: string[]
+}
+
+export const SUPPORTED_PUBLIC_KEY_TYPES: PublicKeyTypes = {
+  ES256K: ['EcdsaSecp256k1VerificationKey2019']
+  
+}
+
+
+
 export async function createJWT(
   header: Partial<JWTHeader>,
   payload: Partial<JWTPayload>,
