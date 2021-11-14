@@ -1,5 +1,6 @@
 // convert data into canonical(standard or normal) format
 import canonicalizeData from 'canonicalize'
+import SignerAlg from './SignerAlgorithm'
 import { decodeBase64url, encodeBase64url } from './util'
 
 
@@ -13,14 +14,13 @@ export interface JWTHeader {
   alg: string
 }
 
+
 // issuer, subject, audience, issued at, Not Before, expiration
 export interface JWTPayload {
   iss?: string              
   sub?: string
   aud?: string | string[]
   iat?: number
-  nbf?: number
-  exp?: number
 }
 
 
@@ -72,7 +72,7 @@ export async function createJWT(
 
   const timestamps: Partial<JWTPayload> = {
     iat: Math.floor(Date.now() / 1000),
-    exp: undefined,
+    
   }
   const fullPayload = { ...timestamps, ...payload, iss: issuer }
   return createJWS(fullPayload, signer, header)
