@@ -121,7 +121,31 @@ function encodeSection(data: any, shouldCanonicalize = false): string {
   }
 }
 
+function ES256KSigner(privateKey, recoverable = false) {
+  const privateKeyBytes = parseKey(privateKey);
 
+  if (privateKeyBytes.length !== 32) {
+    throw new Error(`bad_key: Invalid private key format. Expecting 32 bytes, but got ${privateKeyBytes.length}`);
+  }
+
+  const keyPair = secp256k1$1.keyFromPrivate(privateKeyBytes);
+  return function (data) {
+    try {
+      const {
+        r,
+        s,
+        recoveryParam
+      } = keyPair.sign(sha256(data));
+      return Promise.resolve(toJose({
+        r: leftpad(r.toString('hex')),
+        s: leftpad(s.toString('hex')),
+        recoveryParam
+      }, recoverable));
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+}
 
 
 const audAddress = '0x20c769ec9c0996ba7737a4826c2aaff00b1b2040'
