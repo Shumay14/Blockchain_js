@@ -1,12 +1,22 @@
 // convert data into canonical(standard or normal) format
 import canonicalizeData from 'canonicalize'
 import SignerAlg from './SignerAlgorithm'
+import VerifierAlgorithm from './VerifierAlgorithm'
+
 import { decodeBase64url, encodeBase64url } from './util'
 
+import type { DIDDocument, DIDResolutionResult, Resolvable, VerificationMethod } from 'did-resolver'
 
 
 export type Signer = (data: string | Uint8Array) => Promise<string>
 export type SignerAlgorithm = (payload: string, signer: Signer) => Promise<string>
+
+export interface JWTOptions {
+  issuer: string
+  signer: Signer
+  alg?: string
+  canonicalize?: boolean
+}
 
 
 export interface JWTHeader {
@@ -21,18 +31,21 @@ export interface JWTPayload {
   sub?: string
   aud?: string | string[]
   iat?: number
+  data?: string
 }
 
 
 // JWTSigniture is JWS = encode JWT header + payload
 // export interface JWTSigniture {
-//   siginture: string
+//   rawData: publicKey
+
+//   siginture: Data 
 // }
 
 
-export interface JWTData {
-
-}
+// export type rawData {
+//   data?: string
+// }
 
 
 export interface JWTDecoded {
@@ -52,10 +65,10 @@ export interface JWTVerified {
 }
 
 
+
 export interface PublicKeyTypes {
   [name: string]: string[]
 }
-
 export const SUPPORTED_PUBLIC_KEY_TYPES: PublicKeyTypes = {
   ES256K: ['EcdsaSecp256k1VerificationKey2019']
   
@@ -105,6 +118,12 @@ export function decodeJWT(jwt: string): JWTDecoded {
   }
 }
 
+
+function encodeTool() {
+  encodeBase64url(JWTHeader)
+  encodeBase64url(JWTPayload)
+}
+
 // signer redeclared...
 const signer = ES256KSigner(process.env.PRIVATE_KEY)
 const jws = await createJWS({ my: 'payload' }, signer)
@@ -121,82 +140,82 @@ function encodeSection(data: any, shouldCanonicalize = false): string {
   }
 }
 
-function ES256KSigner(privateKey, recoverable = false) {
-  const privateKeyBytes = parseKey(privateKey);
+// function ES256KSigner(privateKey, recoverable = false) {
+//   const privateKeyBytes = parseKey(privateKey);
 
-  if (privateKeyBytes.length !== 32) {
-    throw new Error(`bad_key: Invalid private key format. Expecting 32 bytes, but got ${privateKeyBytes.length}`);
-  }
+//   if (privateKeyBytes.length !== 32) {
+//     throw new Error(`bad_key: Invalid private key format. Expecting 32 bytes, but got ${privateKeyBytes.length}`);
+//   }
 
-  const keyPair = secp256k1$1.keyFromPrivate(privateKeyBytes);
-  return function (data) {
-    try {
-      const {
-        r,
-        s,
-        recoveryParam
-      } = keyPair.sign(sha256(data));
-      return Promise.resolve(toJose({
-        r: leftpad(r.toString('hex')),
-        s: leftpad(s.toString('hex')),
-        recoveryParam
-      }, recoverable));
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-}
+//   const keyPair = secp256k1$1.keyFromPrivate(privateKeyBytes);
+//   return function (data) {
+//     try {
+//       const {
+//         r,
+//         s,
+//         recoveryParam
+//       } = keyPair.sign(sha256(data));
+//       return Promise.resolve(toJose({
+//         r: leftpad(r.toString('hex')),
+//         s: leftpad(s.toString('hex')),
+//         recoveryParam
+//       }, recoverable));
+//     } catch (e) {
+//       return Promise.reject(e);
+//     }
+//   };
+// }
 
 
-const audAddress = '0x20c769ec9c0996ba7737a4826c2aaff00b1b2040'
-const aud = `did:ethr:${audAddress}`
-const address = '0xf3beac30c498d9e26865f34fcaa57dbb935b0d74'
-const did = `did:ethr:${address}`
-const alg = 'ES256K'
+// const audAddress = '0x20c769ec9c0996ba7737a4826c2aaff00b1b2040'
+// const aud = `did:ethr:${audAddress}`
+// const address = '0xf3beac30c498d9e26865f34fcaa57dbb935b0d74'
+// const did = `did:ethr:${address}`
+// const alg = 'ES256K'
 
-const privateKey = '278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'
-const publicKey = '03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479'
-const verifier = new TokenVerifier(alg, publicKey)
-const signer = ES256KSigner(privateKey)
-const recoverySigner = ES256KSigner(privateKey, true)
+// const privateKey = '278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'
+// const publicKey = '03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479'
+// const verifier = new TokenVerifier(alg, publicKey)
+// const signer = ES256KSigner(privateKey)
+// const recoverySigner = ES256KSigner(privateKey, true)
 
-const didDocLegacy = {
-  '@context': 'https://w3id.org/did/v1',
-  id: did,
-  publicKey: [
-    {
-      id: `${did}#keys-1`,
-      type: 'Secp256k1VerificationKey2018',
-      owner: did,
-      publicKeyHex: publicKey,
-    },
-  ],
-  authentication: [
-    {
-      type: 'Secp256k1SignatureAuthentication2018',
-      publicKey: `${did}#keys-1`,
-    },
-  ],
-}
+// const didDocLegacy = {
+//   '@context': 'https://w3id.org/did/v1',
+//   id: did,
+//   publicKey: [
+//     {
+//       id: `${did}#keys-1`,
+//       type: 'Secp256k1VerificationKey2018',
+//       owner: did,
+//       publicKeyHex: publicKey,
+//     },
+//   ],
+//   authentication: [
+//     {
+//       type: 'Secp256k1SignatureAuthentication2018',
+//       publicKey: `${did}#keys-1`,
+//     },
+//   ],
+// }
 
-const didDoc = {
-  didDocument: {
-    '@context': 'https://w3id.org/did/v1',
-    id: did,
-    verificationMethod: [
-      {
-        id: `${did}#keys-1`,
-        type: 'EcdsaSecp256k1VerificationKey2019',
-        controller: did,
-        publicKeyHex: publicKey,
-      },
-    ],
-    authentication: [`${did}#keys-1`],
-    assertionMethod: [`${did}#keys-1`],
-    capabilityInvocation: [`${did}#keys-1`],
-    capabilityDelegation: [`${did}#some-key-that-does-not-exist`],
-  },
-}
+// const didDoc = {
+//   didDocument: {
+//     '@context': 'https://w3id.org/did/v1',
+//     id: did,
+//     verificationMethod: [
+//       {
+//         id: `${did}#keys-1`,
+//         type: 'EcdsaSecp256k1VerificationKey2019',
+//         controller: did,
+//         publicKeyHex: publicKey,
+//       },
+//     ],
+//     authentication: [`${did}#keys-1`],
+//     assertionMethod: [`${did}#keys-1`],
+//     capabilityInvocation: [`${did}#keys-1`],
+//     capabilityDelegation: [`${did}#some-key-that-does-not-exist`],
+//   },
+// }
 
 
 
