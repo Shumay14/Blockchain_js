@@ -1,14 +1,11 @@
 // convert data into canonical(standard or normal) format
 import canonicalizeData from 'canonicalize'
+import { encodeBase64url } from './util'
 
-import { decodeBase64url, encodeBase64url } from './util'
-
-
-const defaultAlg = 'ES256K'
-
+const defaultAlg = 'X25519_XSalsa20_Poly1305'
 
 // export type getVC = string
-export type publicKey = string
+// export type publicKey = string
 // export type rawData = string
 
 export interface JWTHeader {
@@ -16,40 +13,43 @@ export interface JWTHeader {
   alg: string
 }
   
-  
 // issuer, subject, audience, issued at, Not Before, expiration
-export interface JWTPayload {
-  title?: string              
-  sub?: string
-  data?: string //encrypt data
+export interface JWTPayload {   
+  sub?: string // 해당 VC의 주인
+  title?: string // VC 항목명
+  data?: string // encrypt data
 }
 
+export interface JWTSignature {   
+  rawData?: string // 개인정보의 원본
+  pubKey?: string // 원본을 암호화 한 설문 의뢰자의 공개키
+}
 
 // create jwt-did-vc
-export async function createVC(
+// return aaaa.bbbb
+export function createVC(
     header: Partial<JWTHeader>,
     payload: string | Partial<JWTPayload>,
 
-): Promise<string> {
+): string{
     if (!header.alg) header.alg = defaultAlg
-    const encodedPayload = typeof payload === 'string' ? payload : encodeSection(payload)
-    const endcodedHeader: string = [encodeSection(header), encodedPayload].join('.')
-  
+
+    // encodeSection == Base64 Encode Function, 사용자 정의 함수
+    const endcodedHeader: string = encodeSection(header)
+    const encodedPayload: string = encodeSection(payload) 
+    
     return [endcodedHeader, encodedPayload].join('.')
 }
 
 
-
-export async function createVP(
+// create jwt-did-vp
+// return aaaa.bbbb.cccc
+export function createVP(
     header: Partial<JWTHeader>,
     payload: string | Partial<JWTPayload>,
-    pubKey: publicKey,
-    rawData: string,
-
-): Promise<string> {
-  const VC = createVC(header, payload)
-  
-  return [VC, rawData, pubKey].join('.')
+    signature: string | Partial<JWTSignature>
+): string {
+  return [header, payload, signature].join('.')
 }
 
 
@@ -59,5 +59,6 @@ function encodeSection(data: any, shouldCanonicalize = false): string {
     } else {
       return encodeBase64url(JSON.stringify(data))
     }
-  }
+}
+
 
