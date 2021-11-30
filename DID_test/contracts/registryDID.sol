@@ -27,7 +27,7 @@ contract registryDID {
   }
 
 
-function getVC (address _add, uint _num) public view returns(repositoryVC memory) {
+  function getVC (address _add, uint _num) public view returns(repositoryVC memory) {
    return ownerVC[_add].repoVC[_num];
 }
   
